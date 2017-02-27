@@ -37,6 +37,44 @@ def route_message(request):
     except Exception as e:
         return response_message(code=100004, content=e)
 
+def is_valid_verification_code(params):
+    '''
+    验证码校验是否正确
+    '''
+    try:
+        mobile = params['mobile']
+        captcha = params['captcha']
+
+        valid_captcha = get_valid_captcha()
+        if valid_captcha == captcha:
+            return response_message(code=0, content=verification_code)
+        else:
+            return response_message(code=100001, content='error')
+    except Exception as e:
+        return response_message(code=100002, content=e)
+
+
+def get_verification_code(params):
+    """
+    获取验证码接口
+    """
+    try:
+        mobile = params['mobile']
+
+        verification_code = create_verification_code()
+
+        response = sendMessage(mobile)
+        save_verification_code(mobile, verification_code)
+        if response:
+            return response_message(code=0, content=verification_code)
+        else:
+            return response_message(code=100001, content='failed to send message!!')
+
+    except Exception as e:
+        return response_message(code=100002, content=e)
+
+
+
 def response_message(code, content="ok"):
         responseData = {
             "errcode": code,
@@ -63,25 +101,6 @@ def create_verification_code():
     return temp
 
 
-def get_verification_code(params):
-    """
-    send message to user
-    """
-    try:
-        mobile = params['mobile']
-
-        verification_code = create_verification_code()
-
-        response = sendMessage(mobile)
-        save_verification_code(mobile, verification_code)
-        if response:
-            return response_message(code=0, content=verification_code)
-        else:
-            return response_message(code=100001, content='failed to send message!!')
-
-    except Exception as e:
-        return response_message(code=100002, content=e)
-
 
 def save_verification_code(mobile, verification_code):
     """
@@ -93,7 +112,7 @@ def save_verification_code(mobile, verification_code):
     re.expire(mobile, 120)
     return True
 
-def message_verify():
+def get_valid_captcha =():
     """
     redis, get message_id
     """
