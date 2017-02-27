@@ -21,21 +21,17 @@ def route_message(request):
     '''
     解析字段 op_type 来判断什么操作，进行相应路由
     '''
-    try:
-        params = request.POST
-        op_type = params['op_type']
+    params = request.POST
+    op_type = params['op_type']
 
-        #获取短信验证码
-        if op_type == "1":
-            return get_verification_code(params)
-            #return response_message(code=100002, content="op_type error!!!")
-        elif op_type == "2":
-            return is_valid_verification_code(params)
-        else:
-            return response_message(code=100003, content="op_type error!!!")
-
-    except Exception as e:
-        return response_message(code=100004, content=e)
+    #获取短信验证码
+    if op_type == "1":
+        return get_verification_code(params)
+        #return response_message(code=100002, content="op_type error!!!")
+    elif op_type == "2":
+        return is_valid_verification_code(params)
+    else:
+        return response_message(code=100003, content="op_type error!!!")
 
 def is_valid_verification_code(params):
     '''
@@ -45,11 +41,11 @@ def is_valid_verification_code(params):
         mobile = params['mobile']
         captcha = params['captcha']
 
-        valid_captcha = get_valid_captcha()
+        valid_captcha = get_valid_captcha(mobile)
         if valid_captcha == captcha:
-            return response_message(code=0, content=verification_code)
+            return response_message(code=0)
         else:
-            return response_message(code=100001, content='error')
+            return response_message(code=100001, content=str(valid_captcha))
     except Exception as e:
         return response_message(code=100002, content=e)
 
@@ -108,13 +104,18 @@ def save_verification_code(mobile, verification_code):
     """
 
     re = redis.Redis(host='54.223.220.51', port=6379, db=2)
-    re.set(mobile, verification_code)
+    re.set(mobile, verification_code.encode('utf-8'))
     re.expire(mobile, 120)
     return True
 
-def get_valid_captcha =():
+def get_valid_captcha(mobile):
     """
     redis, get message_id
     """
     re = redis.Redis(host='54.223.220.51', port=6379, db=2)
-    return re.get(mobile)
+
+    value = re.get(mobile)
+    if value:
+        return value.decode('utf-8')
+    else:
+        return False
