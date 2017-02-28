@@ -2,6 +2,7 @@ from django.db import models
 
 class UserInfo(models.Model):
     mobile = models.CharField(max_length=12)
+    nick_name = models.CharField(max_length=50)
     passwd = models.CharField(max_length=20, null=True)
     sex = models.IntegerField(null=True)
     birthday = models.CharField(max_length=20, null=True)

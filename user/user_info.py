@@ -6,6 +6,8 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
 
+from .models import UserInfo
+
 from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 
@@ -30,8 +32,29 @@ def route_message(request):
         #return response_message(code=100002, content="op_type error!!!")
     elif op_type == "2":
         return is_valid_verification_code(params)
+    elif op_type == "3" :
+        return save_user_info(params)
     else:
         return response_message(code=100003, content="op_type error!!!")
+
+def save_user_info(params):
+    '''
+    保存用户信息
+    '''
+    try:
+        mobile = params['mobile']
+        nick_name = params['nick_name']
+        birthday = params['birthday']
+        sex = params['sex']
+        passwd = params['passwd']
+
+        user = UserInfo(mobile=mobile, nick_name=nick_name, sex=sex, birthday=birthday)
+        user.save()
+        return response_message(code=0)
+    except Exception as e:
+        return response_message(code=100005, content=e)
+
+
 
 def is_valid_verification_code(params):
     '''
